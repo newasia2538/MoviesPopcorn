@@ -13,13 +13,13 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFCA28"
+        android:background="#FFF176"
         android:paddingBottom="32dp"
         android:paddingTop="40dp"
         android:paddingLeft="16dp"
         android:textSize="40dp"
         android:id="@+id/movieName"
-        android:layout_below="@+id/toolBar"
+
         />
 
     <LinearLayout
@@ -64,7 +64,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/markAsFavoriteButton"
                 android:gravity="center"
-                android:background="#FFD54F"
+                android:background="#FFF9C4"
                 android:textSize="10dp"
                 android:text="mark as favorite"
                 android:paddingLeft="16dp"

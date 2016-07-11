@@ -92,11 +92,10 @@ public class CustomAdapter extends BaseAdapter {
 
 
         }
-        else {
+        else if(width>height) {
             Picasso.with(mContext).load("http://image.tmdb.org/t/p/w342/" + item.get(i).getPosterPath())
-                    .resize(height/ 2, width / 2)
+                    .resize(width/2, height)
                     .into(holder.imageView);
-
 
         }
 
@@ -150,7 +149,6 @@ public class CustomAdapter extends BaseAdapter {
                     isFavourite = false;
                     Picasso.with(mContext).load(R.drawable.ic_star_none).into((ImageView) view);
                     Toast.makeText(mContext, "Remove from favourite.", Toast.LENGTH_SHORT).show();
-                    realm.delete(DataBaseMovie.class);
                 }
             }
         };
