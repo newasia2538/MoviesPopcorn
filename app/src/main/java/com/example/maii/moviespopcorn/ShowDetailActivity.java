@@ -113,6 +113,7 @@ public class ShowDetailActivity extends AppCompatActivity {
         movieRated.setText(String.valueOf(itemList.get(position).getVoteAverage())+"/10");
         movieYearInTheater.setText(date);
 
+
     }
 
 
