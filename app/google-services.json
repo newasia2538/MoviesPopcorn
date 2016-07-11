@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "797796569787",
+    "firebase_url": "https://moviespopcorn-5457c.firebaseio.com",
+    "project_id": "moviespopcorn-5457c",
+    "storage_bucket": "moviespopcorn-5457c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:797796569787:android:64eac02ead332dfa",
+        "android_client_info": {
+          "package_name": "com.example.maii.moviespopcorn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "797796569787-ddg051p1bfmqe6ifcqg050h5jr8lkr1u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.maii.moviespopcorn",
+            "certificate_hash": "739B7837730578B00295CD664C1C184AC479272E"
+          }
+        },
+        {
+          "client_id": "797796569787-11s2d70gbstcrp90jmdai6hf4po21e3k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRHCM1ENwABXPWnMdfTLadojghXwi-_TQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "797796569787-11s2d70gbstcrp90jmdai6hf4po21e3k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
