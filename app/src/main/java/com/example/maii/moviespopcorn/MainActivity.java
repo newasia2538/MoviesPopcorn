@@ -12,9 +12,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,37 +39,57 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     Boolean checkMenusPopular = true;
     Parcelable onRestoreParcelable;
     Intent intent;
-
+    Boolean isFavourite = false;
+    ImageView FavouriteButton;
+    CustomAdapter.Holder holder;
+    CustomAdapter adapter;
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (itemList == null) {
-            if (checkMenusPopular) {
-                getPopularMoviesFromServer();
-                getSupportActionBar().setTitle("Popular Movies");
+        if (onRestoreParcelable == null) {
+            int position;
+            Intent getIntent = getIntent();
+            Bundle bundle = getIntent().getExtras();
 
-                checkMenusPopular = true;
-            } else {
-                getTopRatedMoviesFromServer();
-                getSupportActionBar().setTitle("Top Rated Movies");
 
-                checkMenusPopular = false;
+            if(itemList==null && bundle == null) {
+                if (checkMenusPopular) {
+                    getPopularMoviesFromServer();
+                    getSupportActionBar().setTitle("Popular Movies");
+
+                    checkMenusPopular = true;
+                } else {
+                    getTopRatedMoviesFromServer();
+                    getSupportActionBar().setTitle("Top Rated Movies");
+
+                    checkMenusPopular = false;
+                }
+            }
+            else if(bundle !=null) {
+                itemList = bundle.getParcelableArrayList("par");
+                position = getIntent.getExtras().getInt("position");
+                setPosterGridView(itemList);
+                gridView.setSelection(position);
+
             }
         } else {
-            gridView.setAdapter(new CustomAdapter(this, itemList));
+            gridView.setAdapter(adapter);
 
-            if (itemList != null && onRestoreParcelable != null) {
+            if (onRestoreParcelable != null) {
                 if (checkMenusPopular) {
-                    onScrollManage();
+                    Log.d("onRestore poppalar" , onRestoreParcelable.toString());
                     gridView.onRestoreInstanceState(onRestoreParcelable);
+                    onScrollManage();
                     getSupportActionBar().setTitle("Popular Movies");
                 } else {
-                    onScrollManage();
+                    Log.d("onRestore top rate" , onRestoreParcelable.toString());
                     gridView.onRestoreInstanceState(onRestoreParcelable);
+                    onScrollManage();
                     getSupportActionBar().setTitle("Top Rated Movies");
                 }
             }
+
 
         }
 
@@ -99,8 +123,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         gridView = (GridView) findViewById(R.id.gridView);
         relativeProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
-
-
+        adapter = new CustomAdapter(this,itemList);
     }
 
 
@@ -141,6 +164,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         outState.putParcelable("parcelableState", gridView.onSaveInstanceState());
         outState.putBoolean("checkMenu",checkMenusPopular);
         outState.putParcelableArrayList("listofItem", (ArrayList<? extends Parcelable>) itemList);
+
 
     }
 
@@ -197,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
             @Override
             public void onFailure(Call<AllMovieList> call, Throwable t) {
-                Toast.makeText(MainActivity.this, t.toString(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "NO INTERNET CONNECTION", Toast.LENGTH_SHORT).show();
                 Log.e("OnResponse", t.getMessage());
             }
         });
@@ -231,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
             @Override
             public void onFailure(Call<AllMovieList> call, Throwable t) {
-                Toast.makeText(MainActivity.this, t.toString(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "NO INTERNET CONNECTION", Toast.LENGTH_SHORT).show();
                 Log.e("OnResponse", t.getMessage());
             }
         });
@@ -240,8 +264,46 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     private void setPosterGridView(List<MoviesList> list) {
         if (itemList != null) {
+            adapter = new CustomAdapter(this,itemList);
+            gridView.setAdapter(adapter);
 
-            gridView.setAdapter(new CustomAdapter(this, list));
+            adapter.setOnPosterClickListener(new OnPosterClickListener() {
+
+                @Override
+                public void onPosterClick(int pos) {
+                    Intent intent = new Intent(MainActivity.this, ShowDetailActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelableArrayList("par", new ArrayList<MoviesList>(itemList));
+                    intent.putExtra("position", pos);
+                    intent.putExtras(bundle);
+                    startActivity(intent);
+                }
+
+                @Override
+                public void onFavClick(int pos) {
+//                    Log.d("number of pos", String.valueOf(pos));
+//                    ImageView FavButton = (ImageView) findViewById(R.id.favouriteButton);
+//                    if(!isFavourite) {
+//                        isFavourite = true;
+//                        Picasso.with(getApplicationContext()).load(R.drawable.ic_star).into(FavButton.set);
+//                        Toast.makeText(MainActivity.this, "Add to favourite.", Toast.LENGTH_SHORT).show();
+//
+//                    }
+//                    else{
+//                        isFavourite = false;
+//                        Picasso.with(getApplicationContext()).load(R.drawable.ic_star_none).into(FavButton);
+//                        Toast.makeText(MainActivity.this, "Remove from favourite.", Toast.LENGTH_SHORT).show();
+//                    }
+                }
+            });
+
+
+            gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    Toast.makeText(MainActivity.this,gridView.getAdapter().getItem(i).toString(),Toast.LENGTH_SHORT).show();
+                }
+            });
             onScrollManage();
 
         } else {

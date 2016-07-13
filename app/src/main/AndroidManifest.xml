@@ -15,7 +15,7 @@
         <meta-data android:name="QUERY_LOG" android:value="true" />
         <meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="com.example.maii.moviespopcorn" />
         <activity android:name=".MainActivity"
-            android:configChanges="orientation">
+            android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -23,7 +23,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".CustomAdapter" />
-        <activity android:name=".ShowDetailActivity" />
+        <activity android:name=".ShowDetailActivity"
+            android:configChanges="orientation|screenSize"/>
         <activity android:name=".FavouriteMovie"></activity>
     </application>
 

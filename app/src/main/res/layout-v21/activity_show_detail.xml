@@ -11,7 +11,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFF176"
+        android:background="#757575"
         android:paddingBottom="32dp"
         android:paddingTop="32dp"
         android:paddingLeft="16dp"
@@ -62,7 +62,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/markAsFavoriteButton"
                 android:gravity="center"
-                android:background="#FFF9C4"
+                android:background="#757575"
                 android:textSize="10dp"
                 android:text="mark as favorite"
                 android:paddingLeft="16dp"

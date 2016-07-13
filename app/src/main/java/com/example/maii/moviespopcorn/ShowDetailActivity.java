@@ -1,11 +1,9 @@
 package com.example.maii.moviespopcorn;
 
 import android.content.Intent;
-
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
-
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -36,6 +34,7 @@ public class ShowDetailActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+
 
 
 
@@ -76,13 +75,18 @@ public class ShowDetailActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 this.finish();
+                onBackButtonPress();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        onBackButtonPress();
+    }
 
     private View.OnClickListener onMarkAsFavouriteMovie(){
         return new View.OnClickListener() {
@@ -95,8 +99,8 @@ public class ShowDetailActivity extends AppCompatActivity {
 
     private void getDataToShow(){
         Intent intent = getIntent();
-        Bundle b = getIntent().getExtras();
-        itemList = b.getParcelableArrayList("par");
+        Bundle bundle = getIntent().getExtras();
+        itemList = bundle.getParcelableArrayList("par");
         position = intent.getExtras().getInt("position");
 
         Date movieReleaseDate = itemList.get(position).getReleaseDate();
@@ -116,5 +120,13 @@ public class ShowDetailActivity extends AppCompatActivity {
 
     }
 
+    private void onBackButtonPress(){
+        Intent intent = new Intent(ShowDetailActivity.this, MainActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList("par", new ArrayList<MoviesList>(itemList));
+        intent.putExtra("position", position);
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
 
 }
