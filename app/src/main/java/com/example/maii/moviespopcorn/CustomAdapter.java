@@ -21,7 +21,7 @@ public class CustomAdapter extends BaseAdapter {
     private Context mContext;
     private List<MoviesList> item;
     private LayoutInflater inflater;
-    Holder holder;
+
 
 
     private OnPosterClickListener lis;
@@ -60,6 +60,7 @@ public class CustomAdapter extends BaseAdapter {
 
     @Override
     public View getView(final int i, View view, ViewGroup viewGroup) {
+        final Holder holder;
         inflater = (LayoutInflater) mContext.getSystemService(mContext.LAYOUT_INFLATER_SERVICE);
 
 
@@ -79,7 +80,7 @@ public class CustomAdapter extends BaseAdapter {
             holder = (Holder) view.getTag();
         }
 
-        getScreenSize(i);
+        setPosterSize(i,holder);
 
         holder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -121,26 +122,23 @@ public class CustomAdapter extends BaseAdapter {
             }
         }
     }
-    public void getScreenSize(int i){
+    public void setPosterSize(int i,Holder holder){
+
         WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         int width = size.x;
         int height = size.y;
-
         if(width<=height) {
             Picasso.with(mContext).load("http://image.tmdb.org/t/p/w342/" + item.get(i).getPosterPath())
                     .resize(width/2, height/2)
                     .into(holder.imageView);
-
-
         }
         else if(width>height) {
             Picasso.with(mContext).load("http://image.tmdb.org/t/p/w342/" + item.get(i).getPosterPath())
                     .resize(width/2, height)
                     .into(holder.imageView);
-
         }
 
     }
