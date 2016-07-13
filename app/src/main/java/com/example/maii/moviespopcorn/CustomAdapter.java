@@ -79,26 +79,7 @@ public class CustomAdapter extends BaseAdapter {
             holder = (Holder) view.getTag();
         }
 
-        WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int width = size.x;
-        int height = size.y;
-
-        if(width<=height) {
-            Picasso.with(mContext).load("http://image.tmdb.org/t/p/w342/" + item.get(i).getPosterPath())
-                    .resize(width/2, height/2)
-                    .into(holder.imageView);
-
-
-        }
-        else if(width>height) {
-            Picasso.with(mContext).load("http://image.tmdb.org/t/p/w342/" + item.get(i).getPosterPath())
-                    .resize(width/2, height)
-                    .into(holder.imageView);
-
-        }
+        getScreenSize(i);
 
         holder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -140,7 +121,29 @@ public class CustomAdapter extends BaseAdapter {
             }
         }
     }
+    public void getScreenSize(int i){
+        WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
 
+        if(width<=height) {
+            Picasso.with(mContext).load("http://image.tmdb.org/t/p/w342/" + item.get(i).getPosterPath())
+                    .resize(width/2, height/2)
+                    .into(holder.imageView);
+
+
+        }
+        else if(width>height) {
+            Picasso.with(mContext).load("http://image.tmdb.org/t/p/w342/" + item.get(i).getPosterPath())
+                    .resize(width/2, height)
+                    .into(holder.imageView);
+
+        }
+
+    }
 
 
 }
