@@ -111,16 +111,20 @@ public class CustomAdapter extends BaseAdapter {
             Log.d("number of pos", isFavourite+"");
             if(!isFavourite) {
                 isFavourite = true;
-                Picasso.with(mContext).load(R.drawable.ic_star).into(starButton);
+                starButton.setImageResource(R.drawable.ic_star);
                 Toast.makeText(mContext, "Add to favourite.", Toast.LENGTH_SHORT).show();
 
             }
             else{
                 isFavourite = false;
-                Picasso.with(mContext).load(R.drawable.ic_star_none).into(starButton);
+                starButton.setImageResource(R.drawable.ic_star_none);
                 Toast.makeText(mContext, "Remove from favourite.", Toast.LENGTH_SHORT).show();
             }
         }
+
+
+
+
     }
     public void setPosterSize(int i,Holder holder){
 

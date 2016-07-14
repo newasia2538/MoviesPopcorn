@@ -14,18 +14,18 @@ import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.squareup.picasso.Picasso;
-
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import io.realm.RealmModel;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -39,9 +39,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     Boolean checkMenusPopular = true;
     Parcelable onRestoreParcelable;
     Intent intent;
-    Boolean isFavourite = false;
-    ImageView FavouriteButton;
-    CustomAdapter.Holder holder;
+    Realm myRealm;
     CustomAdapter adapter;
 
     @Override
@@ -53,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             Bundle bundle = getIntent().getExtras();
 
 
-            if(itemList==null && bundle == null) {
+            if (itemList == null && bundle == null) {
                 if (checkMenusPopular) {
                     getPopularMoviesFromServer();
                     getSupportActionBar().setTitle("Popular Movies");
@@ -65,8 +63,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
                     checkMenusPopular = false;
                 }
-            }
-            else if(bundle !=null) {
+            } else if (bundle != null) {
                 itemList = bundle.getParcelableArrayList("par");
                 position = getIntent.getExtras().getInt("position");
                 setPosterGridView(itemList);
@@ -78,12 +75,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
             if (onRestoreParcelable != null) {
                 if (checkMenusPopular) {
-                    Log.d("onRestore poppalar" , onRestoreParcelable.toString());
+                    Log.d("onRestore poppalar", onRestoreParcelable.toString());
                     gridView.onRestoreInstanceState(onRestoreParcelable);
                     onScrollManage();
                     getSupportActionBar().setTitle("Popular Movies");
                 } else {
-                    Log.d("onRestore top rate" , onRestoreParcelable.toString());
+                    Log.d("onRestore top rate", onRestoreParcelable.toString());
                     gridView.onRestoreInstanceState(onRestoreParcelable);
                     onScrollManage();
                     getSupportActionBar().setTitle("Top Rated Movies");
@@ -102,9 +99,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         setContentView(R.layout.activity_main);
         initWidget();
 
+
         RealmConfiguration realmConfig = new RealmConfiguration.Builder(this).build();
         Realm.setDefaultConfiguration(realmConfig);
-
+        myRealm = Realm.getInstance(realmConfig);
 
 
         swipeRefreshLayout.setOnRefreshListener(this);
@@ -116,14 +114,11 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
 
-
-
-
     private void initWidget() {
         gridView = (GridView) findViewById(R.id.gridView);
         relativeProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
-        adapter = new CustomAdapter(this,itemList);
+        adapter = new CustomAdapter(this, itemList);
     }
 
 
@@ -147,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 getPopularMoviesFromServer();
                 return true;
             case R.id.favourite:
-                intent = new Intent(this,FavouriteMovie.class);
+                intent = new Intent(this, FavouriteMovie.class);
                 startActivity(intent);
                 return true;
             default:
@@ -162,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         super.onSaveInstanceState(outState);
 
         outState.putParcelable("parcelableState", gridView.onSaveInstanceState());
-        outState.putBoolean("checkMenu",checkMenusPopular);
+        outState.putBoolean("checkMenu", checkMenusPopular);
         outState.putParcelableArrayList("listofItem", (ArrayList<? extends Parcelable>) itemList);
 
 
@@ -195,7 +190,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
 
-
     private void getTopRatedMoviesFromServer() {
 
         Call<AllMovieList> call = RetrofitBuilder.getInstance().gettmDbAPI().listTopRated(id);
@@ -210,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     if (onRestoreParcelable != null) {
                         gridView.onRestoreInstanceState(onRestoreParcelable);
                     }
+                    setDataFromServerToDataBase();
                 } else {
                     try {
                         Log.d("Error", response.errorBody().string());
@@ -241,6 +236,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     if (onRestoreParcelable != null) {
                         gridView.onRestoreInstanceState(onRestoreParcelable);
                     }
+                    setDataFromServerToDataBase();
                 } else {
                     try {
                         Log.d("Error", response.errorBody().string());
@@ -264,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     private void setPosterGridView(List<MoviesList> list) {
         if (itemList != null) {
-            adapter = new CustomAdapter(this,itemList);
+            adapter = new CustomAdapter(this, itemList);
             gridView.setAdapter(adapter);
 
             adapter.setOnPosterClickListener(new OnPosterClickListener() {
@@ -281,19 +277,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
                 @Override
                 public void onFavClick(int pos) {
-//                    Log.d("number of pos", String.valueOf(pos));
-//                    ImageView FavButton = (ImageView) findViewById(R.id.favouriteButton);
-//                    if(!isFavourite) {
-//                        isFavourite = true;
-//                        Picasso.with(getApplicationContext()).load(R.drawable.ic_star).into(FavButton.set);
-//                        Toast.makeText(MainActivity.this, "Add to favourite.", Toast.LENGTH_SHORT).show();
-//
-//                    }
-//                    else{
-//                        isFavourite = false;
-//                        Picasso.with(getApplicationContext()).load(R.drawable.ic_star_none).into(FavButton);
-//                        Toast.makeText(MainActivity.this, "Remove from favourite.", Toast.LENGTH_SHORT).show();
-//                    }
+                    setDataToRealm();
                 }
             });
 
@@ -301,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    Toast.makeText(MainActivity.this,gridView.getAdapter().getItem(i).toString(),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, gridView.getAdapter().getItem(i).toString(), Toast.LENGTH_SHORT).show();
                 }
             });
             onScrollManage();
@@ -312,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
 
-    private void onScrollManage(){
+    private void onScrollManage() {
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView absListView, int i) {
@@ -334,6 +318,49 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             }
 
         });
+    }
+
+    public void setDataToRealm() {
+        int position = gridView.getSelectedItemPosition();
+
+        Date movieReleaseDate = itemList.get(position).getReleaseDate();
+        SimpleDateFormat formatDate = new SimpleDateFormat("yyyy");
+        String date = formatDate.format(movieReleaseDate);
+
+        myRealm.beginTransaction();
+        DataBaseMovie dataBase = myRealm.createObject(DataBaseMovie.class);
+        dataBase.setOverview(itemList.get(position).getOverview());
+        dataBase.setReleaseDate(date);
+        dataBase.setPosterpath("http://image.tmdb.org/t/p/w342/" + itemList.get(position).getPosterPath());
+        dataBase.setFavourite(true);
+        dataBase.setTitleName(itemList.get(position).getOriginalTitle());
+
+        myRealm.commitTransaction();
+        Log.d("database", myRealm.toString());
+    }
+
+    public void setDataFromServerToDataBase() {
+
+        myRealm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                DataBaseMovie dataBase = myRealm.createObject(DataBaseMovie.class);
+                for (int i = 0; i < itemList.size(); i++) {
+
+                    Date movieReleaseDate = itemList.get(i).getReleaseDate();
+                    SimpleDateFormat formatDate = new SimpleDateFormat("yyyy");
+                    String date = formatDate.format(movieReleaseDate);
+
+                    dataBase.setId(itemList.get(i).getId());
+                    dataBase.setTitleName(itemList.get(i).getOriginalTitle());
+                    dataBase.setReleaseDate(date);
+                    dataBase.setPosterpath("http://image.tmdb.org/t/p/w342/" + itemList.get(i).getPosterPath());
+                    dataBase.setFavourite(true);
+                    dataBase.setTitleName(itemList.get(i).getOriginalTitle());
+                }
+            }
+        });
+        Toast.makeText(this,"all Data was added to database",Toast.LENGTH_SHORT).show();
     }
 
 }

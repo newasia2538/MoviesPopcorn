@@ -10,17 +10,19 @@ import io.realm.annotations.PrimaryKey;
 public class DataBaseMovie extends RealmObject {
     @PrimaryKey
     private long id;
+
     private String titleName, Posterpath, ReleaseDate, Overview;
     private Boolean isFavourite = false;
     public DataBaseMovie() {
     }
-    public DataBaseMovie(String titleName, String Posterpath, String ReleaseDate, String Overview, Boolean isFavourite){
+    public DataBaseMovie(String titleName, String Posterpath, String ReleaseDate, String Overview, Boolean isFavourite, long id){
         this.titleName = titleName;
         this.Posterpath = Posterpath;
         this.ReleaseDate = ReleaseDate;
         this.isFavourite = isFavourite;
         this.Overview = Overview;
 
+        this.id = id;
     }
 
     public String getOverview() {
