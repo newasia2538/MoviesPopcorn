@@ -36,8 +36,6 @@ public class ShowDetailActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
 
-
-
         buttonMarkAsFavourite = (Button) findViewById(R.id.markAsFavoriteButton);
         imageView = (ImageView) findViewById(R.id.moviePoster);
         movieName = (TextView) findViewById(R.id.movieName);
@@ -45,7 +43,7 @@ public class ShowDetailActivity extends AppCompatActivity {
         movieRated = (TextView) findViewById(R.id.movieRated);
         movieDescription = (TextView) findViewById(R.id.movieDescription);
         buttonMarkAsFavourite.setOnClickListener(onMarkAsFavouriteMovie());
-        if(itemList == null) {
+        if (itemList == null) {
             getDataToShow();
         }
 
@@ -88,16 +86,16 @@ public class ShowDetailActivity extends AppCompatActivity {
         onBackButtonPress();
     }
 
-    private View.OnClickListener onMarkAsFavouriteMovie(){
+    private View.OnClickListener onMarkAsFavouriteMovie() {
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(ShowDetailActivity.this,itemList.get(position).getOriginalTitle()+" has mark as your favourite.",Toast.LENGTH_SHORT).show();
+                Toast.makeText(ShowDetailActivity.this, itemList.get(position).getOriginalTitle() + " has mark as your favourite.", Toast.LENGTH_SHORT).show();
             }
         };
     }
 
-    private void getDataToShow(){
+    private void getDataToShow() {
         Intent intent = getIntent();
         Bundle bundle = getIntent().getExtras();
         itemList = bundle.getParcelableArrayList("par");
@@ -108,19 +106,20 @@ public class ShowDetailActivity extends AppCompatActivity {
         date = formatDate.format(movieReleaseDate);
 
         showDetail();
-        }
-    private void showDetail(){
-        Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w342/"+itemList.get(position).getPosterPath()).into(imageView);
+    }
+
+    private void showDetail() {
+        Picasso.with(getApplicationContext()).load("http://image.tmdb.org/t/p/w342/" + itemList.get(position).getPosterPath()).into(imageView);
         movieName.setText(itemList.get(position).getOriginalTitle());
         movieYearInTheater.setText(itemList.get(position).getReleaseDate().toString());
         movieDescription.setText(itemList.get(position).getOverview());
-        movieRated.setText(String.valueOf(itemList.get(position).getVoteAverage())+"/10");
+        movieRated.setText(String.valueOf(itemList.get(position).getVoteAverage()) + "/10");
         movieYearInTheater.setText(date);
 
 
     }
 
-    private void onBackButtonPress(){
+    private void onBackButtonPress() {
         Intent intent = new Intent(ShowDetailActivity.this, MainActivity.class);
         Bundle bundle = new Bundle();
         bundle.putParcelableArrayList("par", new ArrayList<MoviesList>(itemList));

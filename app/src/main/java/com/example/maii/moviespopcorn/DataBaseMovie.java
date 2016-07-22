@@ -11,11 +11,13 @@ public class DataBaseMovie extends RealmObject {
     @PrimaryKey
     private long id;
 
-    private String titleName, Posterpath, ReleaseDate, Overview;
+    private String titleName, Posterpath, ReleaseDate, Overview, ImageBase64;
     private Boolean isFavourite = false;
+
     public DataBaseMovie() {
     }
-    public DataBaseMovie(String titleName, String Posterpath, String ReleaseDate, String Overview, Boolean isFavourite, long id){
+
+    public DataBaseMovie(String titleName, String Posterpath, String ReleaseDate, String Overview, Boolean isFavourite, long id, String imageBase64) {
         this.titleName = titleName;
         this.Posterpath = Posterpath;
         this.ReleaseDate = ReleaseDate;
@@ -23,6 +25,15 @@ public class DataBaseMovie extends RealmObject {
         this.Overview = Overview;
 
         this.id = id;
+        this.ImageBase64 = imageBase64;
+    }
+
+    public String getImageBase64() {
+        return ImageBase64;
+    }
+
+    public void setImageBase64(String imageBase64) {
+        ImageBase64 = imageBase64;
     }
 
     public String getOverview() {

@@ -1,11 +1,17 @@
 package com.example.maii.moviespopcorn;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,6 +23,7 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,7 +32,7 @@ import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
-import io.realm.RealmModel;
+import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -41,6 +48,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     Intent intent;
     Realm myRealm;
     CustomAdapter adapter;
+    String ba1;
+    RealmResults<DataBaseMovie> resultsQueries;
 
     @Override
     protected void onResume() {
@@ -155,12 +164,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
         outState.putParcelable("parcelableState", gridView.onSaveInstanceState());
         outState.putBoolean("checkMenu", checkMenusPopular);
         outState.putParcelableArrayList("listofItem", (ArrayList<? extends Parcelable>) itemList);
-
-
     }
 
     @Override
@@ -179,14 +185,30 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             @Override
             public void run() {
                 if (checkMenusPopular) {
-                    getPopularMoviesFromServer();
+                    if (isOnline()) {
+                        getPopularMoviesFromServer();
+                    } else {
+
+                    }
                 } else {
-                    getTopRatedMoviesFromServer();
+                    if (isOnline()) {
+                        getTopRatedMoviesFromServer();
+                    } else {
+
+                    }
                 }
 
                 swipeRefreshLayout.setRefreshing(false);
             }
         }, 3000);
+    }
+
+
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
 
@@ -200,11 +222,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 if (response.isSuccessful()) {
                     getSupportActionBar().setTitle("Top Rated Movies");
                     itemList = response.body().getResults();
+                    setDataFromServerToDataBase();
                     setPosterGridView(itemList);
                     if (onRestoreParcelable != null) {
                         gridView.onRestoreInstanceState(onRestoreParcelable);
                     }
-                    setDataFromServerToDataBase();
+
                 } else {
                     try {
                         Log.d("Error", response.errorBody().string());
@@ -232,11 +255,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 if (response != null) {
                     getSupportActionBar().setTitle("Popular Movies");
                     itemList = response.body().getResults();
+                    setDataFromServerToDataBase();
                     setPosterGridView(itemList);
                     if (onRestoreParcelable != null) {
                         gridView.onRestoreInstanceState(onRestoreParcelable);
                     }
-                    setDataFromServerToDataBase();
+
                 } else {
                     try {
                         Log.d("Error", response.errorBody().string());
@@ -277,7 +301,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
                 @Override
                 public void onFavClick(int pos) {
-                    setDataToRealm();
+                    setOrRemoveFavouriteMovieToRealm(pos);
                 }
             });
 
@@ -291,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             onScrollManage();
 
         } else {
-            Toast.makeText(this, "itemList is Null", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "List is Null", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -320,47 +344,64 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         });
     }
 
-    public void setDataToRealm() {
-        int position = gridView.getSelectedItemPosition();
+    public void setOrRemoveFavouriteMovieToRealm(final int position) {
 
-        Date movieReleaseDate = itemList.get(position).getReleaseDate();
-        SimpleDateFormat formatDate = new SimpleDateFormat("yyyy");
-        String date = formatDate.format(movieReleaseDate);
+        final RealmConfiguration configuration = new RealmConfiguration.Builder(this).build();
+        myRealm = Realm.getInstance(configuration);
+        RealmResults<DataBaseMovie> results = myRealm.where(DataBaseMovie.class).findAll();
 
         myRealm.beginTransaction();
-        DataBaseMovie dataBase = myRealm.createObject(DataBaseMovie.class);
-        dataBase.setOverview(itemList.get(position).getOverview());
-        dataBase.setReleaseDate(date);
-        dataBase.setPosterpath("http://image.tmdb.org/t/p/w342/" + itemList.get(position).getPosterPath());
-        dataBase.setFavourite(true);
-        dataBase.setTitleName(itemList.get(position).getOriginalTitle());
-
+        if (results.get(position).getFavourite() == false) {
+            results.get(position).setFavourite(true);
+            Toast.makeText(MainActivity.this, "Add to favourite.", Toast.LENGTH_SHORT).show();
+        } else {
+            results.get(position).setFavourite(false);
+            Toast.makeText(MainActivity.this, "Remove from favourite.", Toast.LENGTH_SHORT).show();
+        }
         myRealm.commitTransaction();
-        Log.d("database", myRealm.toString());
+
+        Log.d("database", results.get(position).getFavourite().toString());
+
     }
+
 
     public void setDataFromServerToDataBase() {
 
         myRealm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                DataBaseMovie dataBase = myRealm.createObject(DataBaseMovie.class);
-                for (int i = 0; i < itemList.size(); i++) {
+                if (realm == null) {
+                    for (int i = 0; i < itemList.size(); i++) {
+                        compressImageToBase64(i);
+                        DataBaseMovie dataBase = realm.createObject(DataBaseMovie.class, itemList.get(i).getId());
+                        Date movieReleaseDate = itemList.get(i).getReleaseDate();
+                        SimpleDateFormat formatDate = new SimpleDateFormat("yyyy");
+                        String date = formatDate.format(movieReleaseDate);
 
-                    Date movieReleaseDate = itemList.get(i).getReleaseDate();
-                    SimpleDateFormat formatDate = new SimpleDateFormat("yyyy");
-                    String date = formatDate.format(movieReleaseDate);
 
-                    dataBase.setId(itemList.get(i).getId());
-                    dataBase.setTitleName(itemList.get(i).getOriginalTitle());
-                    dataBase.setReleaseDate(date);
-                    dataBase.setPosterpath("http://image.tmdb.org/t/p/w342/" + itemList.get(i).getPosterPath());
-                    dataBase.setFavourite(true);
-                    dataBase.setTitleName(itemList.get(i).getOriginalTitle());
+                        dataBase.setId(itemList.get(i).getId());
+                        dataBase.setReleaseDate(date);
+                        dataBase.setPosterpath("http://image.tmdb.org/t/p/w342/" + itemList.get(i).getPosterPath());
+                        dataBase.setTitleName(itemList.get(i).getOriginalTitle());
+                        dataBase.setOverview(itemList.get(i).getOverview());
+                        dataBase.setFavourite(false);
+                        dataBase.setImageBase64(ba1);
+                        Log.d("ImageBase64 : ", resultsQueries.get(i).getImageBase64());
+                    }
+                    Toast.makeText(getApplicationContext(), "all Data was added to database", Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
-        Toast.makeText(this,"all Data was added to database",Toast.LENGTH_SHORT).show();
+
+    }
+
+    public void compressImageToBase64(int position) {
+        Bitmap bitmapOrg = BitmapFactory.decodeFile("http://image.tmdb.org/t/p/w342/" + itemList.get(position).getPosterPath());
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        bitmapOrg.compress(Bitmap.CompressFormat.JPEG, 100, bao);
+        byte[] ba = bao.toByteArray();
+        ba1 = Base64.encodeToString(ba, Base64.DEFAULT);
     }
 
 }
